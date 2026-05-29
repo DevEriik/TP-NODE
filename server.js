@@ -51,6 +51,37 @@ const server = createServer(async (req, res) => {
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Datos invalidos" }));
     }
+  } else if (req.url.startsWith("/api/characters/") && req.method === "PUT") {
+
+    try {
+      let id = req.url.split("/").pop()
+      let personajeEncontrado = characters.find((agente) => agente.id === id)
+
+      if (!personajeEncontrado) {
+        res.writeHead(404, {"Content-Type": "application/json"})
+        return res.end(JSON.stringify({error: "Personaje no encontrado"}))
+      }
+
+      const bodyData = await parseBody(req)
+
+      if (!bodyData.name || !bodyData.race || !bodyData.role || !bodyData.level || !bodyData.universe) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Faltan campos obligatorios" }));
+      }
+
+      personajeEncontrado.name = bodyData.name;
+      personajeEncontrado.race = bodyData.race;
+      personajeEncontrado.role = bodyData.role;
+      personajeEncontrado.level = Number(bodyData.level);
+      personajeEncontrado.universe = bodyData.universe;
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(personajeEncontrado));
+    } catch (error) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Datos inválidos en el body" }));
+    }
+
   } else if (req.url === "/health" && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ status: "ok" }));
